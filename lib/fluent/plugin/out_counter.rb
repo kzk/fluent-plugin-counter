@@ -105,8 +105,8 @@ class Fluent::CounterOutput < Fluent::TimeSlicedOutput
     def incr(conn, time_minute, key, value)
       conn.update(
         { :time => time_minute, :key => key },
-        { "$set" => { 'time' => time_minute },
-          "$inc" => { key => value } },
+        { "$set" => { 'time' => time_minute, 'key' => key },
+          "$inc" => { 'value' => value } },
         { :safe => true, :upsert => true })
     end
   end
