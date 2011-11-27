@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+require 'thrift'
+$:.unshift File.join(File.dirname(__FILE__), '../lib/fluent/plugin/thrift')
+require 'counter_types'
+require 'counter_constants'
+require 'counter'
+
+host = 'localhost'
+port = 1463
+
+socket = Thrift::Socket.new host, port.to_i
+transport = Thrift::FramedTransport.new socket
+protocol = Thrift::BinaryProtocol.new transport, false, false
+client = Counter::Client.new protocol
+transport.open
+
+# 2011/09/02 Kazuki Ohta <kazuki.ohta@gmail.com>
+# explicitly specify TCP_NODELAY for low-latency communication.
+raw_sock = socket.to_io
+raw_sock.setsockopt Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1
+
+50.times {
+e = Event.new
+e.timestamp = Time.now.to_i
+e.category = 'counter.blog'
+e.key = ['net', 'kzk9', 'blog', 'tornado']
+e.value = 1
+  p client.Post(e)
+}
+
+transport.close

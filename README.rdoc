@@ -1,0 +1,86 @@
+= Scribe input plugin for Fluent
+
+== Overview
+
+This is a plugin for fluentd[https://github.com/fluentd] event collector. This plugin adds the Scribe[https://github.com/facebook/scribe] compatible interface to fluentd.
+
+== What's Scribe?
+
+Scribe[https://github.com/facebook/scribe] is a server for aggregating log data streamed in real time from a large number of servers, developed at Facebook.
+
+It uses Thrift[http://thrift.apache.org/], a cross-language RPC framework, to communicate between clients and servers.
+
+== What's Scribe plugin for fluent?
+
+The Scribe plugin for fluentd, which enables fluentd to talk the Scribe protocol. Scribe protocol is defined as follows, in Thrift-IDL format:
+
+  enum ResultCode
+  {
+    OK,
+    TRY_LATER
+  }
+  
+  struct LogEntry
+  {
+    1:  string category,
+    2:  string message
+  }
+  
+  service scribe extends fb303.FacebookService
+  {
+    ResultCode Log(1: list<LogEntry> messages);
+  }
+
+The category field is used as fluentd 'tag'.
+
+== How to use?
+
+Please add the following configurations to fluent.conf.
+
+  # Scribe input
+  <source>
+    type scribe
+    port 1463
+  </source>
+
+  # Scribe output
+  <match *>
+    type scribe
+    host scribed-host.local
+    port 1463
+  </match>
+
+These options are supported.
+
+* (for input)
+* port: port number (default: 1463)
+* bind: bind address (default: 0.0.0.0)
+* server_type: server architecture either in 'simple', 'threaded', 'thread_pool', 'nonblocking' (default: nonblocking)
+* is_framed: use framed protocol or not (default: true)
+
+* (for output)
+* host: host name or address (default: localhost)
+* port: port number (default: 1463)
+* field_ref: field name which sent as scribe log message (default: message)
+* timeout: thrift protocol timeout (default: 30)
+
+== For Developers
+
+To test this plugin, please execute the following command in your 'fluent' project directory, not scribe input plugin directory.
+
+  $ export SCRIBE_PLUGIN_DIR=../fluent-plugin-scribe                                                                   
+  $ FLUENT_PLUGIN=$SCRIBE_PLUGIN_DIR/lib/fluent/plugin/ ./bin/fluentd --config $SCRIBE_PLUGIN_DIR/example.conf -v -v -v
+
+Then please execute the sample client.
+
+  $ ./bin/fluent-scribe-remote
+
+== Contributors
+
+* {Satoshi Tagomori}[https://github.com/tagomoris]
+* {Sadayuki Furuhashi}[https://github.com/frsyuki]
+
+== Copyright
+
+Copyright:: Copyright (c) 2011 Treasure Data, Inc.
+License::   Apache License, Version 2.0
