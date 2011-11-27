@@ -1,6 +1,0 @@
-class Fluent::HoopOutput < Fluent::TimeSlicedOutput
-  Fluent::Plugin.register_output('hoop', self)
-
-  config_set_default :buffer_type, 'memory'
-  config_set_default :time_slice_format, '%Y%m%d' # %Y%m%d%H
-
